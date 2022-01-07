@@ -9,9 +9,6 @@ export const theme = {
       ...DefaultTheme.colors,
       primary: Color.primary.light,
       accent: Color.secondary.light,
-      onSurface: "red",
-      backdrop: "red",
-      text: "red",
     },
   },
 };

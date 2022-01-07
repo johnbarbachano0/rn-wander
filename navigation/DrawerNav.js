@@ -5,14 +5,14 @@ import {
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { Alert, Image, SafeAreaView, StyleSheet, View } from "react-native";
+import { Button, Divider } from "react-native-paper";
 import Color from "../constants/Color";
 import HomeStackNav from "./HomeStackNav";
-import { Store } from "../constants/Icons";
-import BodyText from "../components/BodyText";
-import MainButton from "../components/MainButton";
+import ExploreStackNav from "./ExploreStackNav";
+import { Store, Explore } from "../constants/Icons";
 import TitleText from "../components/TitleText";
 import { useDispatch } from "react-redux";
-import { setLogout } from "../services/AuthService";
+import { setLogout } from "../features/AuthSlice";
 import { usePlatform } from "../components/customHooks";
 import { isApple } from "../constants/isApple";
 import { useTheme } from "@react-navigation/native";
@@ -22,8 +22,7 @@ const CustomDrawerContent = (props) => {
   const dispatch = useDispatch();
 
   const logoutHandler = () => {
-    const data = [];
-    dispatch(setLogout(data));
+    dispatch(setLogout());
   };
 
   const dispatchHandler = () => {
@@ -42,17 +41,20 @@ const CustomDrawerContent = (props) => {
       >
         <View style={styles.drawerCont}>
           <TitleText style={styles.title}>Wander</TitleText>
+          <Divider style={styles.divider} />
           <DrawerItemList {...props} />
         </View>
         <View style={styles.buttonCont}>
-          <MainButton
-            style={styles.button}
-            bgUnpress={Color.secondary.light}
-            bgPress={Color.secondary.dark}
+          <Button
             onPress={dispatchHandler}
+            mode={"outlined"}
+            icon={"logout"}
+            compact
+            contentStyle={styles.button}
           >
-            <BodyText style={styles.buttonText}>Logout</BodyText>
-          </MainButton>
+            Logout
+          </Button>
+
           {isPortrait && (
             <Image
               style={styles.logo}
@@ -65,7 +67,7 @@ const CustomDrawerContent = (props) => {
   );
 };
 
-const DrawerNav = ({ navigation, ...props }) => {
+const DrawerNav = ({ navigation }) => {
   const Drawer = createDrawerNavigator();
   const { isPortrait } = usePlatform();
   const { dark: isDark, colors } = useTheme();
@@ -80,7 +82,7 @@ const DrawerNav = ({ navigation, ...props }) => {
         },
         drawerLabelStyle: {
           color: isDark ? "white" : Color.secondary.light,
-          fontSize: isApple ? 25 : 15,
+          fontSize: isApple ? 20 : 15,
           textAlign: "left",
         },
         drawerInactiveBackgroundColor: isDark
@@ -106,7 +108,20 @@ const DrawerNav = ({ navigation, ...props }) => {
           drawerIcon: () => (
             <Store
               color={isDark ? "white" : Color.secondary.light}
-              size={isApple ? 25 : 15}
+              size={isApple ? 20 : 15}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="ExploreDrawer"
+        component={ExploreStackNav}
+        options={{
+          title: "Explore",
+          drawerIcon: () => (
+            <Explore
+              color={isDark ? "white" : Color.secondary.light}
+              size={isApple ? 20 : 15}
             />
           ),
         }}
@@ -122,6 +137,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
   },
+  divider: { margin: 10 },
   buttonCont: {
     justifyContent: "center",
     alignItems: "center",
@@ -130,14 +146,14 @@ const styles = StyleSheet.create({
     bottom: -10,
   },
   logo: {
-    height: 70,
-    width: "100%",
+    height: 60,
+    width: "70%",
+    marginTop: 20,
   },
   button: {
-    borderRadius: 20,
-    margin: 10,
-    padding: 20,
-    width: "90%",
+    marginVertical: 10,
+
+    width: "100%",
   },
   title: {
     color: Color.retro.shade1,

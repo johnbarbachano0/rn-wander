@@ -198,3 +198,15 @@ export const BackIcon = (props) => {
     return <MatIcon name={"arrow-back"} size={25} color={"white"} {...props} />;
   }
 };
+
+export const Explore = (props) => {
+  return (
+    <MatIcon
+      {...props}
+      name={"explore"}
+      size={props.size}
+      color={props.color}
+      onPress={props.onPress}
+    />
+  );
+};

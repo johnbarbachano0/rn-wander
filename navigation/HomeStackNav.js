@@ -33,7 +33,7 @@ const HomeStackNav = (props) => {
         name="Home"
         component={Home}
         options={({ navigation }) => ({
-          title: "All Places",
+          title: "Places",
           headerLeft: () => (
             <MenuButton navigation={navigation} isDark={isDark} />
           ),
@@ -42,21 +42,21 @@ const HomeStackNav = (props) => {
       <HomeStack.Screen
         name="PlaceDetails"
         component={PlaceDetails}
-        options={({ navigation }) => ({
+        options={() => ({
           title: "Details",
         })}
       />
       <HomeStack.Screen
         name="MapScreen"
         component={MapScreen}
-        options={({ navigation }) => ({
+        options={() => ({
           title: "Map",
         })}
       />
       <HomeStack.Screen
         name="NewPlace"
         component={NewPlace}
-        options={({ navigation }) => ({
+        options={({ route }) => ({
           title: "Add New Place",
         })}
       />

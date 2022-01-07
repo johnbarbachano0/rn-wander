@@ -1,6 +1,7 @@
 import { Alert } from "react-native";
 import { useMemo } from "react";
 import { useWindowDimensions } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import vars from "../env";
 
 export const useCapitalize = (str) => {
@@ -56,12 +57,13 @@ export const saveToLocal = async (key, value) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    // Alert.alert("Error!", `Failed to save to local storage.`, [
-    //   {
-    //     text: "OK",
-    //     onPress: () => {},
-    //   },
-    // ]);
+    console.log(error);
+    Alert.alert("Error!", `Failed to save to local storage.`, [
+      {
+        text: "OK",
+        onPress: () => {},
+      },
+    ]);
   }
 };
 
@@ -74,6 +76,7 @@ export const getLocalData = async (key) => {
       return null;
     }
   } catch (error) {
+    return null;
     // Alert.alert("Error!", "Failed to read local storage.", [
     //   {
     //     text: "OK",
@@ -87,7 +90,12 @@ export const removeLocalData = async (key) => {
   try {
     await AsyncStorage.removeItem("key");
   } catch (error) {
-    console.log(error);
+    Alert.alert("Error!", "Failed to read delete data in storage.", [
+      {
+        text: "OK",
+        onPress: () => {},
+      },
+    ]);
   }
 };
 

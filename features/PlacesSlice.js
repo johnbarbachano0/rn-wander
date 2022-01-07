@@ -3,7 +3,10 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   value: {
     places: [],
-    fetchedData: [],
+    sortValues: {
+      column: "updatedAt",
+      sortOrder: "DESC",
+    },
   },
 };
 
@@ -17,12 +20,16 @@ export const PlacesSlice = createSlice({
       state.value.places = [...places, newPlace];
     },
     getPlaces: (state, action) => {
-      const { fetched } = action.payload;
-      state.value.places = fetched;
+      const { myPlaces } = action.payload;
+      state.value.places = myPlaces;
+    },
+    setSortValues: (state, action) => {
+      const { newSortValues } = action.payload;
+      state.value.sortValues = newSortValues;
     },
   },
 });
 
-export const { setPlace, getPlaces } = PlacesSlice.actions;
+export const { setPlace, getPlaces, setSortValues } = PlacesSlice.actions;
 
 export default PlacesSlice.reducer;

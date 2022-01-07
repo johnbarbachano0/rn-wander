@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import React, { useState } from "react";
 import AppLoading from "expo-app-loading";
-import { AppRegistry, useColorScheme } from "react-native";
+import { AppRegistry, useColorScheme, Alert } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import {
   NavigationContainer,
@@ -21,7 +21,9 @@ init()
     console.log("Initialized database");
   })
   .catch((error) => {
-    console.log("Initializing db failed");
+    Alert.alert("Database Error!", "Restart App.", [
+      { text: "OK", onPress: () => {} },
+    ]);
     console.log(error);
   });
 

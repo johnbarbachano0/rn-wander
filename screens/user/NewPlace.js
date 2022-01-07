@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
 import {
   Alert,
   Keyboard,
@@ -6,16 +6,13 @@ import {
   ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
-  Text,
-  View,
 } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { isApple } from "../../constants/isApple";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import MainCamera from "../../components/MainCamera";
-import MainLocation from "../../components/MainLocation";
 import { setPlace } from "../../features/PlacesSlice";
 import Place from "../../model/Place";
 import { placesSchema } from "../../schema/PlacesSchema";
@@ -26,15 +23,26 @@ import {
   useIsoDate,
   useRandomNumber,
 } from "../../components/customHooks";
-import Color from "../../constants/Color";
 import * as FileSystem from "expo-file-system";
-import { insertPlace } from "../../helpers/db";
+import { insertPlace, updatePlace } from "../../helpers/db";
+import MapPreview from "../../components/MapPreview";
+import MainMap from "../../components/MainMap";
 
-const NewPlace = ({ navigation }) => {
+const NewPlace = ({ navigation, route }) => {
+  const { navPath, id } = route.params;
+  const isAdd = navPath === "Home";
   const dispatch = useDispatch();
+  const { places } = useSelector((state) => state.places.value);
+  const place = places.filter((place) => place.id === id).pop();
   const [loading, setLoading] = useState(false);
-  const [date, setDate] = useState(new Date(Date.now()));
-  const [show, setShow] = useState(false);
+  const [date, setDate] = useState(
+    isAdd ? new Date(Date.now()) : JSON.parse(place?.visitAt)
+  );
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [locationUri, setLocationUri] = useState(
+    isAdd ? null : place?.locationUri
+  );
 
   const {
     control,
@@ -43,72 +51,105 @@ const NewPlace = ({ navigation }) => {
     formState: { errors, isDirty },
   } = useForm({
     resolver: yupResolver(placesSchema),
-    defaultValues: {
-      visitAt: date,
-    },
+    defaultValues: isAdd
+      ? {
+          visitAt: date,
+        }
+      : { ...place, visitAt: JSON.parse(place.visitAt) },
   });
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: isAdd ? "Add New Place" : "Edit Place",
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", () => {
+      Keyboard.dismiss();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    !isAdd &&
+      setValue(
+        "location",
+        { latitude: place.lat, longitude: place.lon },
+        { shouldDirty: false }
+      );
+    !isAdd &&
+      setValue("locationUri", place.locationUri, { shouldDirty: false });
+    !isAdd &&
+      setValue("visitAt", JSON.parse(place?.visitAt), { shouldDirty: false });
+    !isAdd && setValue("image", place.image, { shouldDirty: false });
+  }, [place]);
+
   const onDateChange = (event, selectedDate) => {
-    setShow(Platform.OS === "ios");
+    setShowCalendar(Platform.OS === "ios");
     const currentDate = selectedDate || date;
     setDate(currentDate);
     setValue("visitAt", currentDate, { shouldDirty: true });
   };
 
   const handleCalendar = () => {
-    isApple ? setShow((prev) => !prev) : setShow(true);
+    isApple ? setShowCalendar((prev) => !prev) : setShowCalendar(true);
   };
 
   const handleImagePicked = (imagePath) => {
     setValue("image", imagePath, { shouldDirty: true });
   };
 
-  const handleLocation = (location) => {
-    setValue("location", location, { shouldDirty: true });
+  const handleLocation = (loc, uri) => {
+    setValue("location", loc, { shouldDirty: true });
+    setValue("locationUri", uri, { shouldDirty: true });
+    setLocationUri(uri);
   };
 
-  const onSubmit = async (data) => {
-    setShow(false);
+  const handleBack = () => {
+    Keyboard.dismiss();
+    navigation.navigate.goBack();
+  };
+
+  const handleYes = async (data) => {
     setLoading(true);
     const newPlace = new Place(
-      useRandomNumber(999999),
+      isAdd ? useRandomNumber(99999999) : place.id,
       data.title,
       data.description,
-      useIsoDate(data.visitAt),
-      "dummy address",
-      "JB",
-      useIsoDate(new Date(Date.now())),
+      JSON.stringify(data.visitAt),
+      data.address,
+      "N/A",
+      isAdd ? useIsoDate(new Date(Date.now())) : place.createdAt,
       useIsoDate(new Date(Date.now())),
       data.image,
-      data.location.lat,
-      data.location.lon
+      data.location.latitude,
+      data.location.longitude,
+      data.locationUri
     );
     const imageName = data.image.split("/").pop();
-    const newPath = FileSystem.documentDirectory + imageName;
+    const newImageUri = FileSystem.documentDirectory + imageName;
+    var params = { ...newPlace, image: newImageUri };
     try {
-      FileSystem.moveAsync({
-        from: newPlace.image,
-        to: newPath,
-      });
-      insertPlace(
-        newPlace.id,
-        newPlace.title,
-        newPlace.description,
-        newPlace.visitAt,
-        newPlace.address,
-        newPlace.createdBy,
-        newPlace.createdAt,
-        newPlace.updatedAt,
-        newPath,
-        newPlace.lat,
-        newPlace.lon
-      ).then((res) => {
-        dispatch(setPlace({ newPlace }));
-        setLoading(false);
-        Alert.alert("Success!", "New place has been saved!", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
-      });
+      newImageUri !== data.image &&
+        FileSystem.moveAsync({
+          from: newPlace.image,
+          to: newImageUri,
+        }).catch((error) => {
+          throw new Error("Error in moving files from cache.");
+        });
+      const dbAction = isAdd ? insertPlace(params) : updatePlace(params);
+      dbAction
+        .then((res) => {
+          dispatch(setPlace({ newPlace }));
+          setLoading(false);
+          Alert.alert("Success!", "New place has been saved!", [
+            { text: "OK", onPress: () => handleBack() },
+          ]);
+        })
+        .catch((error) => {
+          throw new Error("Error in saving to database");
+        });
     } catch (error) {
       setLoading(false);
       Alert.alert("Error!", "Error in saving new place.", [
@@ -116,6 +157,40 @@ const NewPlace = ({ navigation }) => {
       ]);
     }
   };
+
+  const onSubmit = async (data) => {
+    isDirty
+      ? Alert.alert("Confirm!", "Are you sure you want to save?", [
+          {
+            text: "Yes",
+            onPress: () => {
+              handleYes(data);
+            },
+          },
+          {
+            text: "No",
+            onPress: () => {},
+          },
+        ])
+      : Alert.alert("No Changes!", "There are no changes to save.", [
+          { text: "OK", onPress: () => {} },
+          {
+            text: "Back",
+            onPress: () => {
+              handleBack();
+            },
+          },
+        ]);
+  };
+
+  if (showMap) {
+    return (
+      <MainMap
+        setShowMap={setShowMap}
+        onPickedLocation={(loc, uri) => handleLocation(loc, uri)}
+      />
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -148,6 +223,24 @@ const NewPlace = ({ navigation }) => {
           )}
           <Controller
             control={control}
+            name="address"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={styles.input}
+                type="flat"
+                placeholder="Address"
+                error={errors?.address ? true : false}
+                value={value}
+                onChangeText={onChange}
+                maxLength={50}
+              />
+            )}
+          />
+          {errors?.address && (
+            <ErrorText>&#x26A0; {errors?.address?.message}</ErrorText>
+          )}
+          <Controller
+            control={control}
             name="description"
             render={({ field: { onChange, value } }) => (
               <TextInput
@@ -177,13 +270,8 @@ const NewPlace = ({ navigation }) => {
                 error={errors?.visitAt ? true : false}
                 value={useDateConverter(value)}
                 onChangeText={onChange}
-                onPress={handleCalendar}
                 right={
-                  <TextInput.Icon
-                    name="calendar"
-                    onPress={handleCalendar}
-                    style={{ color: Color.primary.light }}
-                  />
+                  <TextInput.Icon name="calendar" onPress={handleCalendar} />
                 }
                 disabled={true}
               />
@@ -192,7 +280,7 @@ const NewPlace = ({ navigation }) => {
           {errors?.visitAt && (
             <ErrorText>&#x26A0; {errors?.visitAt?.message}</ErrorText>
           )}
-          {show && (
+          {showCalendar && (
             <DateTimePicker
               value={date}
               mode={"date"}
@@ -225,21 +313,33 @@ const NewPlace = ({ navigation }) => {
             control={control}
             name="location"
             render={({ field: { value } }) => (
-              <MainLocation
-                onLocation={(location) => handleLocation(location)}
-                value={value}
-              />
+              <MapPreview value={value} locationUri={locationUri} />
             )}
           />
+          <Controller
+            control={control}
+            name="locationUri"
+            render={({ field: { value } }) => (
+              <TextInput style={styles.hiddenInput} value={value} />
+            )}
+          />
+          <Button
+            onPress={() => setShowMap(true)}
+            loading={showMap}
+            disabled={showMap}
+            labelStyle={styles.buttonPick}
+          >
+            Open Map
+          </Button>
           <Button
             mode="contained"
             onPress={handleSubmit(onSubmit)}
             loading={loading}
-            disabled={loading ? true : false}
+            disabled={loading}
             style={styles.button}
             labelStyle={styles.buttonText}
           >
-            Submit
+            {isAdd ? "Submit" : "Save Changes"}
           </Button>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -271,6 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     maxHeight: 150,
   },
+  buttonPick: { padding: 10 },
   button: {
     width: "60%",
     margin: 10,
@@ -281,5 +382,8 @@ const styles = StyleSheet.create({
   },
   datepicker: {
     width: "100%",
+  },
+  hiddenInput: {
+    display: "none",
   },
 });

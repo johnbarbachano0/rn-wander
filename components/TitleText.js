@@ -16,10 +16,10 @@ export default TitleText;
 const styles = StyleSheet.create({
   text: {
     fontFamily: "merriweather",
-    fontSize: isApple ? 70 : 60,
+    fontSize: isApple ? 40 : 30,
     color: "black",
     textShadowColor: Color.secondary.light,
-    textShadowOffset: { width: 3, height: 2 },
+    textShadowOffset: { width: 1, height: 1.5 },
     textShadowRadius: 1,
     padding: 10,
   },

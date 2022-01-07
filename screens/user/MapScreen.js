@@ -1,10 +1,11 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import MapViewer from "../../components/MapViewer";
 
-const MapScreen = () => {
+const MapScreen = ({ route }) => {
   return (
     <View style={styles.screen}>
-      <Text>Map</Text>
+      <MapViewer route={route} />
     </View>
   );
 };

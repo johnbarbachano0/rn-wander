@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Button, Card } from "react-native-paper";
 
-const MainCamera = ({ onImagePicked }) => {
-  const [pickedImagePath, setPickedImagePath] = useState("");
+const MainCamera = ({ onImagePicked, value }) => {
+  const [pickedImagePath, setPickedImagePath] = useState(value);
 
   // This function is triggered when the "Select an image" button pressed
   const showImagePicker = async () => {
@@ -59,7 +59,7 @@ const MainCamera = ({ onImagePicked }) => {
   return (
     <View style={styles.screen}>
       <View style={styles.imageContainer}>
-        {pickedImagePath === "" ? (
+        {pickedImagePath === null || pickedImagePath === undefined ? (
           <Card style={styles.card}>
             <Text style={styles.text}>No image selected</Text>
           </Card>
@@ -73,8 +73,12 @@ const MainCamera = ({ onImagePicked }) => {
         )}
       </View>
       <View style={styles.buttonContainer}>
-        <Button onPress={showImagePicker}>Select image</Button>
-        <Button onPress={openCamera}>Open camera</Button>
+        <Button onPress={showImagePicker} labelStyle={styles.button}>
+          Select image
+        </Button>
+        <Button onPress={openCamera} labelStyle={styles.button}>
+          Open camera
+        </Button>
       </View>
     </View>
   );
@@ -87,13 +91,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    margin: 20,
   },
   buttonContainer: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
   },
+  button: { padding: 10 },
   imageContainer: {
     alignItems: "center",
     justifyContent: "center",
