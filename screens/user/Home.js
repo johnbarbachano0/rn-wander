@@ -7,7 +7,15 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Appbar, Card, FAB, Paragraph, Searchbar } from "react-native-paper";
+import {
+  Appbar,
+  Card,
+  DarkTheme,
+  DefaultTheme,
+  FAB,
+  Paragraph,
+  Searchbar,
+} from "react-native-paper";
 import { useSelector, useDispatch } from "react-redux";
 import { getPlaces } from "../../features/PlacesSlice";
 import { isApple } from "../../constants/isApple";
@@ -17,8 +25,9 @@ import { useDrawerStatus } from "@react-navigation/drawer";
 import { useIsFocused } from "@react-navigation/native";
 import CardsList from "../../components/CardsList";
 import SortBox from "../../components/SortBox";
+import { useTheme } from "@react-navigation/native";
 
-const Home = ({ navigation }) => {
+const Home = ({ navigation, ...props }) => {
   const keyEl = useRef();
   const { places, sortValues } = useSelector((state) => state.places.value);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,10 +35,13 @@ const Home = ({ navigation }) => {
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const isDrawerOpen = useDrawerStatus() === "open";
-  const [appbarStyle, setAppbarStyle] = useState({ paddingBottom: 20 });
+  const [appbarStyle, setAppbarStyle] = useState({
+    paddingBottom: isApple ? 20 : 0,
+  });
   const [showSortBox, setShowSortBox] = useState(false);
   const isFocused = useIsFocused();
   const { keyboardHeight } = useKeyboard();
+  const { dark: isDark, colors } = useTheme();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -55,9 +67,13 @@ const Home = ({ navigation }) => {
   }, [isDrawerOpen]);
 
   useEffect(() => {
+    isDrawerOpen && navigation.closeDrawer();
+  }, []);
+
+  useEffect(() => {
     keyboardHeight > 0
       ? setAppbarStyle({ paddingBottom: 0 })
-      : setAppbarStyle({ paddingBottom: 20 });
+      : setAppbarStyle({ paddingBottom: isApple ? 20 : 0 });
   }, [keyboardHeight, isFocused]);
 
   const onChangeSearch = async (query) => {
@@ -82,12 +98,16 @@ const Home = ({ navigation }) => {
 
   const refreshHandler = () => {
     setRefreshing(true);
-    fetchNewData().then((res) => {
-      if (res) {
-        setSearchQuery("");
-        setRefreshing(false);
-      } else {
-        setRefreshing(false);
+    fetchNewData()
+      .then((res) => {
+        if (res) {
+          setSearchQuery("");
+          setRefreshing(false);
+        } else {
+          setRefreshing(false);
+        }
+      })
+      .catch((error) => {
         Alert.alert("Error!", "Error in getting data from database.", [
           {
             text: "Try Again",
@@ -96,8 +116,7 @@ const Home = ({ navigation }) => {
             },
           },
         ]);
-      }
-    });
+      });
   };
 
   const fetchNewData = () => {
@@ -156,7 +175,17 @@ const Home = ({ navigation }) => {
           />
         )}
       </ScrollView>
-      <Appbar style={[styles.appbar, appbarStyle, { bottom: keyboardHeight }]}>
+      <Appbar
+        style={[
+          styles.appbar,
+          appbarStyle,
+          {
+            height: isApple ? (keyboardHeight > 0 ? 60 : 75) : 55,
+            bottom: isApple ? keyboardHeight : 0,
+            backgroundColor: isDark ? colors?.card : "#fff",
+          },
+        ]}
+      >
         <Appbar.Action icon="sort" onPress={handleShowSort} />
         <Searchbar
           placeholder="Search"
@@ -168,7 +197,9 @@ const Home = ({ navigation }) => {
         />
         <Appbar.Action icon="keyboard" onPress={handleShowKeyboard} />
       </Appbar>
-      <FAB style={styles.fab} icon="plus" onPress={handleAdd} />
+      {!showSortBox && (
+        <FAB style={styles.fab} icon="plus" onPress={handleAdd} />
+      )}
       {showSortBox && (
         <SortBox
           onHideDialog={handleShowSort}
@@ -192,7 +223,7 @@ const styles = StyleSheet.create({
   cardListCont: {
     justifyContent: "flex-start",
     width: "100%",
-    paddingBottom: isApple ? 110 : 10,
+    paddingBottom: 110,
   },
   card: {
     width: "100%",
@@ -208,15 +239,13 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 20,
-    bottom: 85,
+    bottom: isApple ? 85 : 60,
   },
   appbar: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
-    paddingBottom: 20,
   },
   searchbar: {
     flex: 1,

@@ -108,7 +108,7 @@ const NewPlace = ({ navigation, route }) => {
 
   const handleBack = () => {
     Keyboard.dismiss();
-    navigation.navigate.goBack();
+    navigation.goBack();
   };
 
   const handleYes = async (data) => {
@@ -194,8 +194,8 @@ const NewPlace = ({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={isApple ? "padding" : "height"}
-      keyboardVerticalOffset={0}
+      behavior={"padding"}
+      enabled={isApple ? true : false}
       style={styles.screen}
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -355,6 +355,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     width: "100%",
+    height: "100%",
   },
   form: {
     flexGrow: 1,

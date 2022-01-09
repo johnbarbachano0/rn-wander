@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "rn-wander",
-    "slug": "rn-wander",
+    "name": "Wander",
+    "slug": "wander",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,12 +15,14 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
+      "bundleIdentifier": "com.therobotcompany.wander",
+      "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "The app accesses your photos to let you share them with your friends.",
+        "NSPhotoLibraryUsageDescription": "The app accesses your media library.",
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "NSFaceIDUsageDescription": "The app uses Face ID."
+        "NSFaceIDUsageDescription": "$(PRODUCT_NAME) requires FaceID access to allows you quick and secure access."
       }
     },
     "android": {
@@ -28,13 +30,20 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#BEE7F2"
       },
+
+      "googleMapsApiKey": "AIzaSyBMDw9VrJ7aH9MDZ2HMnoSt_NZuMWzGuAY",
+
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.USE_BIOMETRIC"
       ],
-      "package": "wander.apk"
+      "versionCode": 1,
+      "package": "com.therobotcompany.wander"
     },
     "web": {
       "favicon": "./assets/favicon.png"

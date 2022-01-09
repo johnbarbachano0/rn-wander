@@ -4,7 +4,7 @@ import { saveToLocal } from "../components/customHooks";
 const initialState = {
   value: {
     authData: {
-      loggedIn: 0,
+      loggedIn: false,
     },
   },
 };
@@ -19,7 +19,7 @@ export const AuthSlice = createSlice({
       state.value.authData = newAuthData;
     },
     setLogout: (state, action) => {
-      const newAuthData = { loggedIn: 0 };
+      const newAuthData = { loggedIn: false };
       saveToLocal("authData", newAuthData);
       state.value.authData = newAuthData;
     },

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import MapView, { Marker } from "react-native-maps";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import * as Location from "expo-location";
 import { Button, Paragraph } from "react-native-paper";
 import Color from "../constants/Color";
+import { isApple } from "../constants/isApple";
 
 export default function MainMap({ setShowMap, onPickedLocation }) {
   const [permission, setPermission] = useState("undetermined");
@@ -20,10 +21,6 @@ export default function MainMap({ setShowMap, onPickedLocation }) {
     const subscribe = await getLocation();
     return () => subscribe;
   }, []);
-
-  useEffect(() => {
-    console.log(permission);
-  }, [permission]);
 
   const getLocation = async () => {
     var { status } = await Location.requestForegroundPermissionsAsync();
@@ -75,6 +72,7 @@ export default function MainMap({ setShowMap, onPickedLocation }) {
   if (permission === "undetermined") {
     return (
       <View style={styles.container}>
+        <ActivityIndicator animating={true} color={Color.primary.light} />
         <Paragraph>Loading...</Paragraph>
       </View>
     );
@@ -111,7 +109,7 @@ export default function MainMap({ setShowMap, onPickedLocation }) {
           labelStyle={styles.buttonText}
           compact
         >
-          Set Location
+          Select
         </Button>
         <Button
           mode="contained"
@@ -119,6 +117,7 @@ export default function MainMap({ setShowMap, onPickedLocation }) {
           style={styles.button}
           labelStyle={styles.buttonText}
           color={Color.nuetral.dark}
+          compact
         >
           Cancel
         </Button>
@@ -144,14 +143,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     flexDirection: "row",
     position: "absolute",
-    bottom: 60,
+    bottom: isApple ? 60 : 20,
   },
   button: {
-    width: "45%",
+    width: "35%",
     margin: 10,
+    paddingHorizontal: 10,
   },
   buttonText: {
     paddingVertical: 5,
-    fontSize: 18,
+    fontSize: 16,
   },
 });

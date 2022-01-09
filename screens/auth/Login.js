@@ -5,13 +5,13 @@ import {
   isEnrolledAsync,
   authenticateAsync,
 } from "expo-local-authentication";
-import { Button, Paragraph } from "react-native-paper";
+import { ActivityIndicator, Button, Paragraph } from "react-native-paper";
 import { isApple } from "../../constants/isApple";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setAuthData } from "../../features/AuthSlice";
+import Color from "../../constants/Color";
 
 const Login = () => {
-  const { loggedIn } = useSelector((state) => state.auth.value.authData);
   const [authStatus, setAuthStatus] = useState();
   const authOptions = {
     promptMessage: isApple ? "Login" : "Login to Wander",
@@ -19,8 +19,12 @@ const Login = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const unsubscribe = biometricsAuth();
-    return () => unsubscribe;
+    const subscribe = biometricsAuth();
+    subscribe.then((res) => {
+      setAuthStatus(res);
+      setAuthData(res === "success" ? true : false);
+    });
+    return subscribe;
   }, []);
 
   const biometricsAuth = async () => {
@@ -41,16 +45,20 @@ const Login = () => {
       state = "success";
     }
 
-    setAuthStatus(state);
-    dispatch(setAuthData(1));
+    if (state === "success") {
+      dispatch(setAuthData(1));
+    } else {
+      dispatch(setAuthData(0));
+    }
     return state;
   };
 
   if (authStatus === "cancelled") {
     return (
       <View style={styles.screen}>
+        <ActivityIndicator animating={true} color={Color.primary.light} />
         <Paragraph>Authentication cancelled.</Paragraph>
-        <Button onPress={() => biometricsAuth()}>Try Again</Button>
+        <Button onPress={() => biometricsAuth()}>Sign In</Button>
       </View>
     );
   }
@@ -83,7 +91,9 @@ const Login = () => {
 
   return (
     <View style={styles.screen}>
+      <ActivityIndicator animating={true} color={Color.primary.light} />
       <Paragraph>Authentication in progress.</Paragraph>
+      <Button onPress={() => biometricsAuth()}>Sign In</Button>
     </View>
   );
 };

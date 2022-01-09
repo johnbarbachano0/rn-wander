@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Button, Dialog, Divider, RadioButton } from "react-native-paper";
 import RadioItem from "./RadioItem";
 import { setSortValues } from "../features/PlacesSlice";
 import { useDispatch } from "react-redux";
+import { isApple } from "../constants/isApple";
 
 const SortBox = ({ onHideDialog, sortValues, onCancel }) => {
   const [orderValue, setOrderValue] = useState(sortValues.sortOrder);
@@ -19,26 +20,30 @@ const SortBox = ({ onHideDialog, sortValues, onCancel }) => {
     onHideDialog();
   };
 
+  const filters = () => {
+    return (
+      <ScrollView contentContainerStyle={styles.android}>
+        <View style={styles.filter}>
+          <RadioItem label="Update Date" value="updatedAt" />
+          <RadioItem label="Place" value="title" />
+          <RadioItem label="Description" value="description" />
+          <RadioItem label="Address" value="address" />
+          <RadioItem label="Create Date" value="createdAt" />
+          <RadioItem label="Visit Date" value="visitAt" />
+        </View>
+      </ScrollView>
+    );
+  };
+
   return (
-    <Dialog visible={true} onDismiss={onHideDialog} dismissable={false}>
+    <Dialog visible={true} onDismiss={onHideDialog} dismissable={true}>
       <Dialog.Title>Sort by</Dialog.Title>
       <Dialog.Content>
         <RadioButton.Group
           onValueChange={(newValue) => setFilterValue(newValue)}
           value={filterValue}
         >
-          <View style={styles.filter}>
-            <RadioItem label="Update Date" value="updatedAt" />
-            <RadioItem label="Place" value="title" />
-          </View>
-          <View style={styles.filter}>
-            <RadioItem label="Description" value="description" />
-            <RadioItem label="Address" value="address" />
-          </View>
-          <View style={styles.filter}>
-            <RadioItem label="Create Date" value="createdAt" />
-            <RadioItem label="Visit Date" value="visitAt" />
-          </View>
+          {filters()}
         </RadioButton.Group>
       </Dialog.Content>
       <Divider />
@@ -49,8 +54,11 @@ const SortBox = ({ onHideDialog, sortValues, onCancel }) => {
           value={orderValue}
         >
           <View style={styles.order}>
-            <RadioItem label="Ascending" value="ASC" />
-            <RadioItem label="Descending" value="DESC" />
+            <RadioItem label={isApple ? "Ascending" : "Asc..."} value="ASC" />
+            <RadioItem
+              label={isApple ? "Descending" : "Desc..."}
+              value="DESC"
+            />
           </View>
         </RadioButton.Group>
       </Dialog.Content>
@@ -74,7 +82,10 @@ const styles = StyleSheet.create({
   filter: {
     flexDirection: "row",
     justifyContent: "flex-start",
-    alignItems: "stretch",
+    alignItems: "center",
     flexWrap: "wrap",
+  },
+  android: {
+    // height: 150,
   },
 });

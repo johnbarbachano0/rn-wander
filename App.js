@@ -24,7 +24,6 @@ init()
     Alert.alert("Database Error!", "Restart App.", [
       { text: "OK", onPress: () => {} },
     ]);
-    console.log(error);
   });
 
 // dropTable("places").then((res) => console.log(res));
@@ -37,7 +36,11 @@ export default function App() {
       <AppLoading
         startAsync={fetchFonts}
         onFinish={() => setLoading(false)}
-        onError={(err) => console.log(err)}
+        onError={(err) =>
+          Alert.alert("Loading Error!", "Restart App.", [
+            { text: "OK", onPress: () => {} },
+          ])
+        }
       />
     );
   }

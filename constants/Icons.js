@@ -210,3 +210,15 @@ export const Explore = (props) => {
     />
   );
 };
+
+export const Home = (props) => {
+  return (
+    <MatIcon
+      {...props}
+      name={"home"}
+      size={props.size}
+      color={props.color}
+      onPress={props.onPress}
+    />
+  );
+};

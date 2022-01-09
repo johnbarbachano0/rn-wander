@@ -9,7 +9,7 @@ import { Button, Divider } from "react-native-paper";
 import Color from "../constants/Color";
 import HomeStackNav from "./HomeStackNav";
 import ExploreStackNav from "./ExploreStackNav";
-import { Store, Explore } from "../constants/Icons";
+import { Home, Explore } from "../constants/Icons";
 import TitleText from "../components/TitleText";
 import { useDispatch } from "react-redux";
 import { setLogout } from "../features/AuthSlice";
@@ -106,7 +106,7 @@ const DrawerNav = ({ navigation }) => {
         options={{
           title: "Home",
           drawerIcon: () => (
-            <Store
+            <Home
               color={isDark ? "white" : Color.secondary.light}
               size={isApple ? 20 : 15}
             />
@@ -147,12 +147,11 @@ const styles = StyleSheet.create({
   },
   logo: {
     height: 60,
-    width: "70%",
+    width: isApple ? "70%" : "80%",
     marginTop: 20,
   },
   button: {
     marginVertical: 10,
-
     width: "100%",
   },
   title: {

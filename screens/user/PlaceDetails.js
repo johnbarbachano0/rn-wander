@@ -157,9 +157,8 @@ const styles = StyleSheet.create({
   },
   card: {
     width: "95%",
-    minWidth: isApple ? "95%" : "99%",
+    minWidth: isApple ? "95%" : "97.5%",
     maxWidth: "100%",
-    margin: 10,
     marginBottom: isApple ? 100 : 10,
   },
   subheader: {

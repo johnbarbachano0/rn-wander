@@ -8,6 +8,7 @@ const RadioItem = (props) => {
       value={props.value}
       position="leading"
       mode="android"
+      labelStyle={{ textAlign: "left" }}
     />
   );
 };

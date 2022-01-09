@@ -105,7 +105,7 @@ export const fetchPlaces = (column, sortOrder) => {
     db.transaction((tx) => {
       tx.executeSql(
         `SELECT * FROM places ORDER BY ${column} ${sortOrder}`,
-        [column, sortOrder],
+        [],
         (_, result) => {
           resolve(result);
         },
